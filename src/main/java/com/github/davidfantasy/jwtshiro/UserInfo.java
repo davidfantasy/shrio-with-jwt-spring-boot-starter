@@ -4,8 +4,7 @@ package com.github.davidfantasy.jwtshiro;
 import java.util.Set;
 
 /**
- * @description: 用于存储登录用户验证权限和生成token所需要的必要信息，由具体的应用程序通过实现AuthUserService接口获得
- * @author: wan.yu
+ * 用于存储登录用户验证权限和生成token所需要的必要信息，由具体的应用程序通过实现AuthUserService接口获得
  **/
 public class UserInfo {
 

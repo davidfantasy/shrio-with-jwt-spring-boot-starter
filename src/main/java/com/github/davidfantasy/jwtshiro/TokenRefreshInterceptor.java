@@ -8,8 +8,7 @@ import org.springframework.web.servlet.HandlerInterceptor;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 /**
- * @description: SpringMVC拦截器，用于检查即将过期的token并及时返回token更新
- * @author: wan.yu
+ * SpringMVC拦截器，用于检查即将过期的token并及时返回token更新
  **/
 public class TokenRefreshInterceptor implements HandlerInterceptor {
 

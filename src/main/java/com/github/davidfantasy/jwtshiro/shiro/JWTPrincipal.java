@@ -1,8 +1,7 @@
 package com.github.davidfantasy.jwtshiro.shiro;
 
 /**
- * @description: 用于存储登录用户的信息，可通过SecurityUtils.getSubject().getPrincipal获得
- * @author: wan.yu
+ * 用于存储登录用户的信息，可通过SecurityUtils.getSubject().getPrincipal获得
  **/
 public class JWTPrincipal {
 
