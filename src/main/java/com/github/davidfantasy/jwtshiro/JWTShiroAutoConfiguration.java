@@ -45,6 +45,9 @@ public class JWTShiroAutoConfiguration {
     @PostConstruct
     public void afterConstruct() {
         logger.info("开始配置jwt-shiro，当前的默认配置为：" + prop);
+        if (prop.getMaxIdleMinute() < prop.getMaxAliveMinute()) {
+            throw new IllegalArgumentException("accessToken的maxIdleMinute必须大于maxAliveMinute，请检查配置");
+        }
     }
 
     @Bean("securityManager")

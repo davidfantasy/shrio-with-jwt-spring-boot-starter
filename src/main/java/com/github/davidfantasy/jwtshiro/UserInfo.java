@@ -8,10 +8,19 @@ import java.util.Set;
  **/
 public class UserInfo {
 
+    /**
+     * 用户的唯一标识
+     */
     private String account;
 
+    /**
+     * 用户密码，用于对token进行解密
+     */
     private String password;
 
+    /**
+     * 用户权限集合，含义类似于Shiro中的perms
+     */
     private Set<String> permissions;
 
     public String getAccount() {

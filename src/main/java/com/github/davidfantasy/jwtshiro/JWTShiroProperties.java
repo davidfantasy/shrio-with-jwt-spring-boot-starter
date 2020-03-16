@@ -9,24 +9,24 @@ public class JWTShiroProperties {
     public static final String JWT_SHIRO_PREFIX = "jwt-shiro";
 
     /**
-     * 权限生效的URL pattern, 多个使用url隔开，例如：/api/*,/rest/*
+     * 需要进行权限拦截的URL pattern, 多个使用url隔开，例如：/api/*,/rest/*
      */
     private String urlPattern = "/*";
 
     /**
-     * JWT token的过期时间，单位分钟
+     * accessToken的理论过期时间，单位分钟，token如果超过该时间则接口响应的header中附带新的token信息
      */
     private int maxAliveMinute = 30;
 
     /**
-     * 最多允许用户多长时间不操作后,无需再次登录仍然可以刷新token 单位分钟
+     * accessToken的最大生存周期，单位分钟，在此时间内的token无需重新登录即可刷新
      */
     private int maxIdleMinute = 60;
 
     /**
-     * 需要刷新token时，后端response携带的token在http header中的name
+     * accessToken在http header中的name
      */
-    private String headerKeyOfToken = "JWT-TOKEN";
+    private String headerKeyOfToken = "jwt-token";
 
     /**
      * token中保存的用户名的key name
