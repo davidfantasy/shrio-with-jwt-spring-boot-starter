@@ -5,10 +5,16 @@ import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.subject.Subject;
 
 /**
- * 由应用端负责实现，通过账户获取用户实际的信息
+ * 由具体的应用端负责实现该接口
  **/
 public interface AuthUserLoader {
 
+    /**
+     * 根据用户的唯一标示对用户进行认证，并获取用户的权限等信息
+     * 如果account对应的用户信息不存在，应返回null
+     * @param account
+     * @return
+     */
     UserInfo getUserInfo(String account);
 
     /**

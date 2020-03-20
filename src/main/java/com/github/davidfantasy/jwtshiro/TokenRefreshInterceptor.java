@@ -34,7 +34,7 @@ public class TokenRefreshInterceptor implements HandlerInterceptor {
         //当前的token已经过期但还未超过maxIdleMinute的情况
         if (principal != null && System.currentTimeMillis() > principal.getExpiresAt()) {
             UserInfo user = userLoader.getUserInfo(principal.getAccount());
-            String newToken = jwtHelper.sign(user.getAccount(), user.getPassword());
+            String newToken = jwtHelper.sign(user.getAccount(), user.getSecret());
             response.setHeader(headerKeyOfToken, newToken);
         }
         return true;

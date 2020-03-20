@@ -58,7 +58,7 @@ public class JWTShiroRealm extends AuthorizingRealm {
         if (user == null) {
             throw new AuthenticationException("未找到用户信息");
         }
-        DecodedJWT jwt = jwtHelper.verify(token, username, user.getPassword());
+        DecodedJWT jwt = jwtHelper.verify(token, username, user.getSecret());
         if (jwt == null) {
             throw new AuthenticationException("token已经过期，请重新登录");
         }

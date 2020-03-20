@@ -14,9 +14,10 @@ public class UserInfo {
     private String account;
 
     /**
-     * 用户密码，用于对token进行解密
+     * accessToken的密钥，用于对accessToken进行加密和解密
+     * 建议为每个用户配置不同的密钥（比如使用用户的password）
      */
-    private String password;
+    private String secret;
 
     /**
      * 用户权限集合，含义类似于Shiro中的perms
@@ -31,14 +32,6 @@ public class UserInfo {
         this.account = account;
     }
 
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
     public Set<String> getPermissions() {
         return permissions;
     }
@@ -47,4 +40,11 @@ public class UserInfo {
         this.permissions = permissions;
     }
 
+    public String getSecret() {
+        return secret;
+    }
+
+    public void setSecret(String secret) {
+        this.secret = secret;
+    }
 }
