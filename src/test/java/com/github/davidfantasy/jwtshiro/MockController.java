@@ -55,16 +55,6 @@ public class MockController {
         return "0";
     }
 
-    @ExceptionHandler(value = {AuthenticationException.class})
-    public void authcExceptionHandler(Exception e, HttpServletResponse res) {
-        responseResult(res, HttpStatus.UNAUTHORIZED);
-    }
-
-    @ExceptionHandler(value = {UnauthorizedException.class})
-    public void authoExceptionHandler(Exception e, HttpServletResponse res) {
-        responseResult(res, HttpStatus.FORBIDDEN);
-    }
-
     private void responseResult(HttpServletResponse response, HttpStatus status) {
         response.setCharacterEncoding("UTF-8");
         response.setHeader("Content-type", "application/json;charset=UTF-8");

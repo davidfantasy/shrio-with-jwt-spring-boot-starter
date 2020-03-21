@@ -25,11 +25,11 @@
     <version>${version}</version>
 </dependency>
 ```
-1. 根据实际业务的需要，实现**com.github.davidfantasy.jwtshiro.JWTUserAuthService**接口。**getUserInfo**方法用于客户端访问时根据客户端传回token中包含的用户account信息，获取用户的实际权限。获取的方式由应用程序端来控制，可以从配置文件中加载，也可以根据account查询数据库，获取用户实际权限。**getAuthenticatedUser**方法已提供默认实现，用于获取当前请求接口的客户信息，以下是一个例子
+2. 根据实际业务的需要，实现**com.github.davidfantasy.jwtshiro.JWTUserAuthService**接口。JWTUserAuthService接口是框架的一个扩展点，便于应用端根据自身的业务规则对权限模型，错误处理等进行自定义实现。**getUserInfo**方法用于客户端访问时根据客户端传回token中包含的用户account信息，获取用户的实际权限。获取的方式由应用程序端来控制，可以从配置文件中加载，也可以根据account查询数据库，获取用户实际权限。**getAuthenticatedUser**方法已提供默认实现，用于获取当前请求接口的客户信息，以下是一个例子
 
 ```java
 @Service
-public class ShiroUserLoader implements AuthUserLoader {
+public class JWTUserAuthServiceImpl implements JWTUserAuthService {
 
     @Autowired
     private UserService userService;
@@ -52,6 +52,24 @@ public class ShiroUserLoader implements AuthUserLoader {
             log.error("读取用户缓存信息发生错误:" + e.getMessage());
         }
         return null;
+    }
+
+    /**
+     * 自定义访问资源认证失败时的处理方式，例如返回json格式的错误信息
+     * {\"code\":401,\"message\":\"用户认证失败！\")
+     */
+    @Override
+    public void onAuthenticationFailed(HttpServletRequest req, HttpServletResponse res) {
+        res.setStatus(HttpStatus.UNAUTHORIZED.value());
+    }
+
+    /**
+     * 自定义访问资源权限不足时的处理方式，例如返回json格式的错误信息
+     * {\"code\":403,\"message\":\"permission denied！\")
+     */
+    @Override
+    public void onAuthorizationFailed(HttpServletRequest req, HttpServletResponse res) {
+        res.setStatus(HttpStatus.FORBIDDEN.value());
     }
 
     private ShiroUserInfo queryUserInfo(String account) {
@@ -99,47 +117,60 @@ public class UserInfo {
 
 }
 ```
-3. 对需要进行权限控制的Controller添加对应的注解，实现灵活的权限控制。**默认所有的Controller中的接口都会添加一个基本的权限控制，即登录才能访问，类似于Shiro的Authc验证方式。**如果需要精确控制某个接口的用户权限，就需要利用到RequiresPerms和AlowAnonymous注解。AlowAnonymous很好理解，就是添加了该注解的接口允许匿名访问，而RequiresPerms则用于指定某个接口所需的用户权限，访问用户必须拥有该权限才允许访问该接口。
+3. 对需要进行权限控制的Controller添加对应的注解，实现灵活的权限控制。**为了简化配置，框架默认所有被拦截的资源必须是要经过认证的用户才可以被访问。**即如果配置的拦截范围是/api/*,则会添加一条默认的验证规则: /api/*=authc。但任何通过注解添加的验证规则都拥有比默认规则更高的优先级。如果需要精确控制某个接口的用户权限，就需要利用到RequiresPerms和AlowAnonymous注解。添加了AlowAnonymous注解的url允许匿名访问，而RequiresPerms则用于指定某个url所需的用户权限，访问用户必须拥有该权限才允许访问该接口。
+**注意**：RequiresPerms比AlowAnonymous拥有更高的优先级，如果一个url同时被设定了两种规则，则AlowAnonymous不会起作用。
+
+下面是一个访问控制规则设置的例子：
 ```java
 @RestController
-@RequestMapping("/test-moudle")
-@RequiresPerms("test-perm")
-public class MockController {
+@RequestMapping("/api/user")
+@RequiresPerms("user")
+public class UserController {
 
-    @GetMapping("/anon")
     @AlowAnonymous
-    public String testAnon() {
-        return "0";
+    @PostMapping("/login")
+    public String login() {
+       return null;
     }
 
-    @GetMapping("/user")
-    public String testUser() {
-        return "0";
+    @GetMapping("/detail")
+    public String getUserDetail() {
+        return null;
     }
 
-    @GetMapping("/perm1")
-    @RequiresPerms("perm1")
-    public String testPerm1() {
-        return "0";
+    @PostMapping("/modify")
+    @RequiresPerms("modify")
+    public String modifyUser() {
+        return null;
     }
 
-    @GetMapping("/perm2")
-    @RequiresPerms("perm2")
+    @PostMapping("/delete")
+    @RequiresPerms("delete")
     public String testPerm2() {
-        return "0";
+        return null;
     }
-
 }
 ```
 在上面的例子中,接口与用户权限的对应关系如下：
 | 接口               | 所需权限                        |
 | :----------------- | :------------------------------ |
-| /test-moudle/anno  | 无需权限，可匿名访问            |
-| /test-moudle/user  | 任何登录用户都可以访问          |
-| /test-moudle/perm1 | 用户需具备权限"test-perm:perm1" |
-| /test-moudle/perm2 | 用户需具备权限"test-perm:perm2" |
+| /api/user/login   | 无需权限，可匿名访问            |
+| /api/user/detail  | 访问用户需具备权限"user"          |
+| /api/user/modify | 访问用户需具备权限"user:modify"  |
+| /api/user/delete | 访问用户需具备权限"user:delete"  |
 
-**注意**：和在Shiro中一样，权限是可以设置层级的，即在上例中，如果用户拥有的权限中有“test-perm”，则可以同时访问/test-moudle/perm1和/test-moudle/perm2
+类似于Shiro官方的如下配置
+```xml
+<property name="filterChainDefinitions"> 
+    <value>
+        /api/user/login     = anon
+        /api/user/detail    = perms["user"]
+        /api/user/modify    = perms["user:modify"]
+        /api/user/delete    = perms["user:delete"]
+    </value>
+</property>
+```
+**注意**：和在Shiro中一样，权限是按层级划分的（使用:分割），即在上例中，如果用户拥有的权限中有“user”，则可以同时访问/api/user/detail,/api/user/modify,/api/user/delete三个接口
 
 ## 客户端调用
 

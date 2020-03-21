@@ -19,11 +19,12 @@ public class MockUserService implements JWTUserAuthService {
         return user;
     }
 
+
     @Override
     public void onAuthenticationFailed(HttpServletRequest req, HttpServletResponse res) {
         res.setStatus(HttpStatus.UNAUTHORIZED.value());
     }
-
+    
     @Override
     public void onAuthorizationFailed(HttpServletRequest req, HttpServletResponse res) {
         res.setStatus(HttpStatus.FORBIDDEN.value());

@@ -4,6 +4,7 @@ import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
 import com.github.davidfantasy.jwtshiro.annotation.AlowAnonymous;
 import com.github.davidfantasy.jwtshiro.annotation.RequiresPerms;
+import org.apache.shiro.authz.annotation.RequiresAuthentication;
 import org.apache.shiro.web.filter.mgt.DefaultFilterChainManager;
 import org.apache.shiro.web.filter.mgt.PathMatchingFilterChainResolver;
 import org.apache.shiro.web.servlet.AbstractShiroFilter;

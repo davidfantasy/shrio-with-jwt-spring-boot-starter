@@ -10,6 +10,7 @@ public class JWTShiroProperties {
 
     /**
      * 需要进行权限拦截的URL pattern, 多个使用url隔开，例如：/api/*,/rest/*
+     * URL pattern的规则和http filter一致
      */
     private String urlPattern = "/*";
 
