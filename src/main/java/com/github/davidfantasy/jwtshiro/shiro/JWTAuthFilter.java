@@ -30,11 +30,6 @@ public class JWTAuthFilter extends AccessControlFilter {
 
     @Override
     protected boolean isAccessAllowed(ServletRequest request, ServletResponse response, Object mappedValue) throws Exception {
-        return false;
-    }
-
-    @Override
-    protected boolean onAccessDenied(ServletRequest request, ServletResponse response) throws IOException {
         //从header或URL参数中查找token
         HttpServletRequest req = (HttpServletRequest) request;
         String authorization = req.getHeader(headerKeyOfToken);
@@ -45,11 +40,16 @@ public class JWTAuthFilter extends AccessControlFilter {
         try {
             getSubject(request, response).login(token);
         } catch (Exception e) {
-            logger.error("鉴权失败:" + e.getMessage());
-            onLoginFail(response, e.getMessage());
+            logger.error("认证失败:" + e.getMessage());
             return false;
         }
         return true;
+    }
+
+    @Override
+    protected boolean onAccessDenied(ServletRequest request, ServletResponse response) throws IOException {
+        onLoginFail(response, "用户认证失败");
+        return false;
     }
 
     private void onLoginFail(ServletResponse response, String message) throws IOException {

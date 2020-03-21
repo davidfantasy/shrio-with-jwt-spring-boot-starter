@@ -23,7 +23,7 @@ public class MockController {
     @PostMapping("/login")
     public Result login() {
         UserInfo user = userService.getUserInfo("testUser");
-        String token = jwtHelper.sign(user.getAccount(), user.getPassword());
+        String token = jwtHelper.sign(user.getAccount(), user.getSecret());
         //后续token的刷新由客服端负责维护
         Result result = new Result();
         result.setToken(token);

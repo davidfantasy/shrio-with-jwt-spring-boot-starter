@@ -57,7 +57,7 @@ public class TestBaseFilter {
     public void testUser() throws Exception {
         this.mvc.perform(get("/jwttest/user"))
                 .andExpect(status().isOk())
-                .andExpect(content().string("{\"code\":401,\"message\":\"无效的请求\",\"data\":null}"));
+                .andExpect(content().string("{\"code\":401,\"message\":\"用户认证失败\",\"data\":null}"));
         this.mvc.perform(get("/jwttest/user").
                 header(headerKeyOfToken, token))
                 .andExpect(status().isOk())
