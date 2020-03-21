@@ -25,7 +25,7 @@
     <version>${version}</version>
 </dependency>
 ```
-1. 根据实际业务的需要，实现**com.github.davidfantasy.jwtshiro.AuthUserLoader**接口。**getUserInfo**方法用于客户端访问时根据客户端传回token中包含的用户account信息，获取用户的实际权限。获取的方式由应用程序端来控制，可以从配置文件中加载，也可以根据account查询数据库，获取用户实际权限。**getAuthenticatedUser**方法已提供默认实现，用于获取当前请求接口的客户信息，以下是一个例子
+1. 根据实际业务的需要，实现**com.github.davidfantasy.jwtshiro.JWTUserAuthService**接口。**getUserInfo**方法用于客户端访问时根据客户端传回token中包含的用户account信息，获取用户的实际权限。获取的方式由应用程序端来控制，可以从配置文件中加载，也可以根据account查询数据库，获取用户实际权限。**getAuthenticatedUser**方法已提供默认实现，用于获取当前请求接口的客户信息，以下是一个例子
 
 ```java
 @Service

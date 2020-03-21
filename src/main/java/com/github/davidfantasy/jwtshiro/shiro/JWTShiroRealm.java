@@ -1,7 +1,7 @@
 package com.github.davidfantasy.jwtshiro.shiro;
 
 import com.auth0.jwt.interfaces.DecodedJWT;
-import com.github.davidfantasy.jwtshiro.AuthUserLoader;
+import com.github.davidfantasy.jwtshiro.JWTUserAuthService;
 import com.github.davidfantasy.jwtshiro.JWTHelper;
 import com.github.davidfantasy.jwtshiro.UserInfo;
 import org.apache.shiro.authc.AuthenticationException;
@@ -15,13 +15,13 @@ import org.apache.shiro.subject.PrincipalCollection;
 
 public class JWTShiroRealm extends AuthorizingRealm {
 
-    private AuthUserLoader userLoader;
+    private JWTUserAuthService userAuthService;
 
     private JWTHelper jwtHelper;
 
-    public JWTShiroRealm(AuthUserLoader userLoader, JWTHelper jwtHelper) {
+    public JWTShiroRealm(JWTUserAuthService userAuthService, JWTHelper jwtHelper) {
         this.jwtHelper = jwtHelper;
-        this.userLoader = userLoader;
+        this.userAuthService = userAuthService;
     }
 
     @Override
@@ -36,7 +36,7 @@ public class JWTShiroRealm extends AuthorizingRealm {
     protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principals) {
         JWTPrincipal principal = (JWTPrincipal) principals.getPrimaryPrincipal();
         SimpleAuthorizationInfo authInfo = new SimpleAuthorizationInfo();
-        UserInfo up = userLoader.getUserInfo(principal.getAccount());
+        UserInfo up = userAuthService.getUserInfo(principal.getAccount());
         if (up != null && up.getPermissions() != null) {
             authInfo.addStringPermissions(up.getPermissions());
         }
@@ -54,7 +54,7 @@ public class JWTShiroRealm extends AuthorizingRealm {
         if (username == null) {
             throw new AuthenticationException("无效的请求");
         }
-        UserInfo user = userLoader.getUserInfo(username);
+        UserInfo user = userAuthService.getUserInfo(username);
         if (user == null) {
             throw new AuthenticationException("未找到用户信息");
         }

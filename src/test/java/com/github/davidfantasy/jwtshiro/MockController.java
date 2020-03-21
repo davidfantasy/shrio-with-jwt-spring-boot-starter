@@ -2,11 +2,13 @@ package com.github.davidfantasy.jwtshiro;
 
 import com.github.davidfantasy.jwtshiro.annotation.AlowAnonymous;
 import com.github.davidfantasy.jwtshiro.annotation.RequiresPerms;
+import org.apache.shiro.authc.AuthenticationException;
+import org.apache.shiro.authz.UnauthorizedException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.*;
+
+import javax.servlet.http.HttpServletResponse;
 
 @RestController
 @RequestMapping("/jwttest")
@@ -51,6 +53,22 @@ public class MockController {
     @RequiresPerms("perm2")
     public String testPerm2() {
         return "0";
+    }
+
+    @ExceptionHandler(value = {AuthenticationException.class})
+    public void authcExceptionHandler(Exception e, HttpServletResponse res) {
+        responseResult(res, HttpStatus.UNAUTHORIZED);
+    }
+
+    @ExceptionHandler(value = {UnauthorizedException.class})
+    public void authoExceptionHandler(Exception e, HttpServletResponse res) {
+        responseResult(res, HttpStatus.FORBIDDEN);
+    }
+
+    private void responseResult(HttpServletResponse response, HttpStatus status) {
+        response.setCharacterEncoding("UTF-8");
+        response.setHeader("Content-type", "application/json;charset=UTF-8");
+        response.setStatus(status.value());
     }
 
 }

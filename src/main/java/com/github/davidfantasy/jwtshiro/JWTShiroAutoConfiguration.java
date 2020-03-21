@@ -33,7 +33,7 @@ import java.util.Map;
  * TODO:对于存在PathVariable的链接支持还存在问题，例如：/test/{var}
  */
 @Configuration
-@ConditionalOnBean(AuthUserLoader.class)
+@ConditionalOnBean(JWTUserAuthService.class)
 @EnableConfigurationProperties({JWTShiroProperties.class})
 public class JWTShiroAutoConfiguration {
 
@@ -67,11 +67,11 @@ public class JWTShiroAutoConfiguration {
     }
 
     @Bean("shiroFilter")
-    public ShiroFilterFactoryBean factory(DefaultWebSecurityManager securityManager) {
+    public ShiroFilterFactoryBean factory(DefaultWebSecurityManager securityManager, JWTUserAuthService userAuthService) {
         ShiroFilterFactoryBean factoryBean = new ShiroFilterFactoryBean();
         Map<String, Filter> filters = Maps.newHashMap();
-        filters.put("jwtAuthc", new JWTAuthFilter(prop.getHeaderKeyOfToken()));
-        filters.put("jwtPerm", new JWTPermFilter());
+        filters.put("jwtAuthc", new JWTAuthFilter(prop.getHeaderKeyOfToken(), userAuthService));
+        filters.put("jwtPerm", new JWTPermFilter(userAuthService));
         factoryBean.setFilters(filters);
         factoryBean.setSecurityManager(securityManager);
         //此处暂时不去设置映射关系，等到ServletContext环境启动后再去刷新
@@ -80,8 +80,8 @@ public class JWTShiroAutoConfiguration {
     }
 
     @Bean("shiroRealm")
-    public JWTShiroRealm shiroRealm(AuthUserLoader userLoader, JWTHelper jwtHelper) {
-        return new JWTShiroRealm(userLoader, jwtHelper);
+    public JWTShiroRealm shiroRealm(JWTUserAuthService userAuthService, JWTHelper jwtHelper) {
+        return new JWTShiroRealm(userAuthService, jwtHelper);
     }
 
     @Bean
@@ -110,7 +110,7 @@ public class JWTShiroAutoConfiguration {
     }
 
     @Bean
-    public TokenRefreshInterceptor tokenRefreshInterceptor(JWTHelper helper, AuthUserLoader userLoader) {
+    public TokenRefreshInterceptor tokenRefreshInterceptor(JWTHelper helper, JWTUserAuthService userLoader) {
         return new TokenRefreshInterceptor(userLoader, helper, prop.getHeaderKeyOfToken());
     }
 
