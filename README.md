@@ -73,7 +73,7 @@ public class JWTUserAuthServiceImpl implements JWTUserAuthService {
     }
 
     private ShiroUserInfo queryUserInfo(String account) {
-		// 这里编写获取ShiroUserInfo的逻辑，例如从数据库进行查询
+    // 这里编写获取ShiroUserInfo的逻辑，例如从数据库进行查询
     }
 
     /**
@@ -118,6 +118,7 @@ public class UserInfo {
 }
 ```
 3. 对需要进行权限控制的Controller添加对应的注解，实现灵活的权限控制。**为了简化配置，框架默认所有被拦截的资源必须是要经过认证的用户才可以被访问。**即如果配置的拦截范围是/api/*,则会添加一条默认的验证规则: /api/*=authc。但任何通过注解添加的验证规则都拥有比默认规则更高的优先级。如果需要精确控制某个接口的用户权限，就需要利用到RequiresPerms和AlowAnonymous注解。添加了AlowAnonymous注解的url允许匿名访问，而RequiresPerms则用于指定某个url所需的用户权限，访问用户必须拥有该权限才允许访问该接口。
+   
 **注意**：RequiresPerms比AlowAnonymous拥有更高的优先级，如果一个url同时被设定了两种规则，则AlowAnonymous不会起作用。
 
 下面是一个访问控制规则设置的例子：
