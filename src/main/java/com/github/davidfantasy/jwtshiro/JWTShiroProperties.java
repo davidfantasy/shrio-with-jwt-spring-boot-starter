@@ -34,6 +34,11 @@ public class JWTShiroProperties {
      */
     private String accountAlias = "account";
 
+    /**
+     * 是否启用token的自动刷新机制
+     */
+    private boolean enableAutoRefreshToken = false;
+
     public String getUrlPattern() {
         return urlPattern;
     }
@@ -74,14 +79,24 @@ public class JWTShiroProperties {
         this.headerKeyOfToken = headerKeyOfToken;
     }
 
+    public boolean isEnableAutoRefreshToken() {
+        return enableAutoRefreshToken;
+    }
+
+    public void setEnableAutoRefreshToken(boolean enableAutoRefreshToken) {
+        this.enableAutoRefreshToken = enableAutoRefreshToken;
+    }
+
     @Override
     public String toString() {
-        return "{" +
+        return "JWTShiroProperties{" +
                 "urlPattern='" + urlPattern + '\'' +
                 ", maxAliveMinute=" + maxAliveMinute +
                 ", maxIdleMinute=" + maxIdleMinute +
                 ", headerKeyOfToken='" + headerKeyOfToken + '\'' +
                 ", accountAlias='" + accountAlias + '\'' +
+                ", enableAutoRefreshToken=" + enableAutoRefreshToken +
                 '}';
     }
+    
 }

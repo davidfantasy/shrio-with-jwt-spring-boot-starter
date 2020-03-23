@@ -1,9 +1,9 @@
 package com.github.davidfantasy.jwtshiro;
 
-import com.google.common.collect.Maps;
 import com.github.davidfantasy.jwtshiro.shiro.JWTAuthFilter;
 import com.github.davidfantasy.jwtshiro.shiro.JWTPermFilter;
 import com.github.davidfantasy.jwtshiro.shiro.JWTShiroRealm;
+import com.google.common.collect.Maps;
 import org.apache.shiro.mgt.DefaultSessionStorageEvaluator;
 import org.apache.shiro.mgt.DefaultSubjectDAO;
 import org.apache.shiro.spring.web.ShiroFilterFactoryBean;
@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.web.servlet.WebMvcAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
@@ -110,11 +111,13 @@ public class JWTShiroAutoConfiguration {
     }
 
     @Bean
+    @ConditionalOnProperty(prefix = JWTShiroProperties.JWT_SHIRO_PREFIX, name = "enable-auto-refresh-token", havingValue = "true")
     public TokenRefreshInterceptor tokenRefreshInterceptor(JWTHelper helper, JWTUserAuthService userLoader) {
         return new TokenRefreshInterceptor(userLoader, helper, prop.getHeaderKeyOfToken());
     }
 
     @Configuration
+    @ConditionalOnProperty(prefix = JWTShiroProperties.JWT_SHIRO_PREFIX, name = "enable-auto-refresh-token", havingValue = "true")
     public static class JWTWebMvcConfigurer implements WebMvcConfigurer {
 
         @Autowired
@@ -127,8 +130,9 @@ public class JWTShiroAutoConfiguration {
         public void addInterceptors(InterceptorRegistry registry) {
             InterceptorRegistration reg = registry.addInterceptor(tokenRefreshInterceptor);
             String[] patterns = prop.getUrlPattern().split(",");
+            logger.info("启用token自动刷新机制，已注册TokenRefreshInterceptor");
             for (String urlPattern : patterns) {
-                logger.info("添加token interceptor匹配URL规则：" + urlPattern);
+                logger.info("TokenRefreshInterceptor匹配URL规则：" + urlPattern);
                 reg.addPathPatterns(urlPattern);
             }
         }

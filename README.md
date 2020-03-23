@@ -30,7 +30,7 @@ shrio-with-jwt-spring-boot-starter 正是针对上述情况而开发的。它基
 </dependency>
 ```
 
-2. 根据实际业务的需要，实现**com.github.davidfantasy.jwtshiro.JWTUserAuthService**接口。JWTUserAuthService 接口是框架的一个扩展点，便于应用端根据自身的业务规则对权限模型，错误处理等进行自定义实现。**getUserInfo**方法用于客户端访问时根据客户端传回 token 中包含的用户 account 信息，获取用户的实际权限。获取的方式由应用程序端来控制，可以从配置文件中加载，也可以根据 account 查询数据库，获取用户实际权限。**getAuthenticatedUser**方法已提供默认实现，用于获取当前请求接口的客户信息，以下是一个例子
+2. 根据实际业务的需要，实现**com.github.davidfantasy.jwtshiro.JWTUserAuthService**接口，并注册为Spring的bean（如果框架没有找到任何一个JWTUserAuthService的实现类，则不会进行任何处理）。JWTUserAuthService 接口是框架的一个扩展点，便于应用端根据自身的业务规则对权限模型，错误处理等进行自定义实现。**getUserInfo**方法用于客户端访问时根据客户端传回 token 中包含的用户 account 信息，获取用户的实际权限。获取的方式由应用程序端来控制，可以从配置文件中加载，也可以根据 account 查询数据库，获取用户实际权限。**getAuthenticatedUser**方法已提供默认实现，用于获取当前请求接口的客户信息，以下是一个例子
 
 ```java
 @Service
@@ -233,6 +233,8 @@ accessToken 的最大生存周期。框架会自动注册一个 Spring 的 Handl
 
 这个机制实际是提供一个窗口期，让客户端安全的刷新 accessToken。试想如果 token 失效了就必须立即重新登录，那势必会严重影响到用户的实际体验。
 
+**注意**：要启用accessToken自动刷新机制，需配置enableAutoRefreshToken参数为true
+
 ## 配置项说明
 
 | 参数名                     | 默认值    | 说明                                                                                                |
@@ -242,3 +244,5 @@ accessToken 的最大生存周期。框架会自动注册一个 Spring 的 Handl
 | jwt-shiro.maxIdleMinute    | 60        | accessToken 的最大生存周期，单位分钟，在此时间内的 token 无需重新登录即可刷新                       |
 | jwt-shiro.headerKeyOfToken | jwt-token | accessToken 在 http header 中的 name                                                                |
 | jwt-shiro.accountAlias     | account   | token 中保存的用户名的 key name                                                                     |
+| jwt-shiro.enableAutoRefreshToken     | false   | 是否启用token自动刷新机制                                                                    |
+
