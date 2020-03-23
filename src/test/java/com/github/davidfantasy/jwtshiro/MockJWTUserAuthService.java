@@ -8,14 +8,17 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 @Service
-public class MockUserService implements JWTUserAuthService {
+public class MockJWTUserAuthService implements JWTUserAuthService {
 
     @Override
     public UserInfo getUserInfo(String account) {
         UserInfo user = new UserInfo();
         user.setAccount("aUser");
         user.setSecret("123456");
-        user.setPermissions(Sets.newHashSet("test-perm:" + AnnotationFilterRuleLoader.BASE_AUTH_PERM_NAME, "test-perm:perm1"));
+        user.setPermissions(Sets.newHashSet("" +
+                "parent-perm:" + AnnotationFilterRuleLoader.BASE_AUTH_PERM_NAME,
+                "parent-perm:subperm-1",
+                "parent-perm:pathvar-perm-2"));
         return user;
     }
 

@@ -2,21 +2,22 @@ package com.github.davidfantasy.jwtshiro;
 
 import com.github.davidfantasy.jwtshiro.annotation.AlowAnonymous;
 import com.github.davidfantasy.jwtshiro.annotation.RequiresPerms;
-import org.apache.shiro.authc.AuthenticationException;
-import org.apache.shiro.authz.UnauthorizedException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-import javax.servlet.http.HttpServletResponse;
-
+/**
+ * 模拟实际的业务接口，用于单元测试
+ */
 @RestController
-@RequestMapping("/jwttest")
-@RequiresPerms("test-perm")
+@RequestMapping("/auth-test")
+@RequiresPerms("parent-perm")
 public class MockController {
 
     @Autowired
-    private MockUserService userService;
+    private MockJWTUserAuthService userService;
 
     @Autowired
     private JWTHelper jwtHelper;
@@ -34,31 +35,44 @@ public class MockController {
 
     @GetMapping("/anon")
     @AlowAnonymous
-    public String testAnon() {
-        return "0";
+    public String testAnonymous() {
+        return "ok";
     }
 
-    @GetMapping("/user")
-    public String testUser() {
-        return "0";
+    @GetMapping("/action-1")
+    public String testRequireParentPerm() {
+        return "ok";
     }
 
-    @GetMapping("/perm1")
-    @RequiresPerms("perm1")
-    public String testPerm1() {
-        return "0";
+    @GetMapping("/action-2")
+    @RequiresPerms("subperm-1")
+    public String testRequireSubperm1() {
+        return "ok";
     }
 
-    @GetMapping("/perm2")
-    @RequiresPerms("perm2")
-    public String testPerm2() {
-        return "0";
+    @GetMapping("/action-3")
+    @RequiresPerms("subperm-2")
+    public String testRequireSubperm2() {
+        return "ok";
     }
 
-    private void responseResult(HttpServletResponse response, HttpStatus status) {
-        response.setCharacterEncoding("UTF-8");
-        response.setHeader("Content-type", "application/json;charset=UTF-8");
-        response.setStatus(status.value());
+    @GetMapping("/pathvar/{id}")
+    @RequiresPerms("pathvar-perm-1")
+    public String testPathvar1() {
+        return "ok";
     }
+
+    @GetMapping("/deep-pathvar/{id}/action1")
+    @RequiresPerms("pathvar-perm-2")
+    public String testPathvar2() {
+        return "ok";
+    }
+
+    @GetMapping("/deep-pathvar/{id}/action2")
+    @RequiresPerms("pathvar-perm-3")
+    public String testPathvar3() {
+        return "ok";
+    }
+
 
 }

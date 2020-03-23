@@ -1,10 +1,9 @@
 package com.github.davidfantasy.jwtshiro;
 
-import com.google.common.base.Strings;
-import com.google.common.collect.Maps;
 import com.github.davidfantasy.jwtshiro.annotation.AlowAnonymous;
 import com.github.davidfantasy.jwtshiro.annotation.RequiresPerms;
-import org.apache.shiro.authz.annotation.RequiresAuthentication;
+import com.google.common.base.Strings;
+import com.google.common.collect.Maps;
 import org.apache.shiro.web.filter.mgt.DefaultFilterChainManager;
 import org.apache.shiro.web.filter.mgt.PathMatchingFilterChainResolver;
 import org.apache.shiro.web.servlet.AbstractShiroFilter;
@@ -16,6 +15,8 @@ import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandl
 
 import java.lang.reflect.Method;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * 基于注解的方式获取权限规则和URL的映射关系
@@ -29,6 +30,8 @@ public class AnnotationFilterRuleLoader {
     private RequestMappingHandlerMapping handlerMapping;
 
     public static final String BASE_AUTH_PERM_NAME = "base-auth";
+
+    private static final Pattern pathVarUrlPattern = Pattern.compile("\\{\\w+\\}");
 
     protected AnnotationFilterRuleLoader(AbstractShiroFilter shiroFilter, RequestMappingHandlerMapping handlerMapping) {
         this.shiroFilter = shiroFilter;
@@ -48,6 +51,11 @@ public class AnnotationFilterRuleLoader {
             String perm = this.concatPerms(beanPerm, methodPerm);
             if (perm == null) {
                 continue;
+            }
+            //替换url中的参数，否则此类型的url不会正确的授权
+            Matcher pathVarUrlMatcher = pathVarUrlPattern.matcher(url);
+            if (pathVarUrlMatcher.find()) {
+                url = pathVarUrlMatcher.replaceAll("**");
             }
             //将映射关系保存后可用于其它需要使用的模块
             PermUtil.addUrlMapping(url, perm);

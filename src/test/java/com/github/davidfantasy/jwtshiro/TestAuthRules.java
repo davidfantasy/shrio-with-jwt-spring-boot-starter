@@ -24,7 +24,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @TestPropertySource("classpath:application-test.property")
 @SpringBootTest(classes = Application.class)
 @AutoConfigureMockMvc
-public class TestBaseFilter {
+public class TestAuthRules {
 
     @Value("${jwt-shiro.header-key-of-token}")
     private String headerKeyOfToken = "JWT-TOKEN";
@@ -36,15 +36,17 @@ public class TestBaseFilter {
 
     @Before
     public void login() throws Exception {
-        MvcResult result = this.mvc.perform(post("/jwttest/login")).andExpect(status().isOk()).andReturn();
+        MvcResult result = this.mvc.perform(post("/auth-test/login")).andExpect(status().isOk()).andReturn();
         Result res = JsonUtil.json2obj(result.getResponse().getContentAsString(), Result.class);
         Assert.assertNotNull(res.getToken());
         this.token = res.getToken();
     }
 
     @Test
-    public void testAnno() throws Exception {
-        this.mvc.perform(get("/jwttest/anon")).andExpect(status().isOk()).andExpect(content().string("0"));
+    public void testAnnoMethod() throws Exception {
+        this.mvc.perform(get("/auth-test/anon"))
+                .andExpect(status().isOk())
+                .andExpect(content().string("ok"));
     }
 
     @Test
@@ -55,26 +57,41 @@ public class TestBaseFilter {
     }
 
     @Test
-    public void testUser() throws Exception {
-        this.mvc.perform(get("/jwttest/user"))
+    public void testParentPerm() throws Exception {
+        this.mvc.perform(get("/auth-test/action-1"))
                 .andExpect(status().is(HttpStatus.UNAUTHORIZED.value()));
-                //.andExpect(content().string("{\"code\":401,\"message\":\"用户认证失败\",\"data\":null}"));
-        this.mvc.perform(get("/jwttest/user").
+        //.andExpect(content().string("{\"code\":401,\"message\":\"用户认证失败\",\"data\":null}"));
+        this.mvc.perform(get("/auth-test/action-1").
                 header(headerKeyOfToken, token))
                 .andExpect(status().isOk())
-                .andExpect(content().string("0"));
+                .andExpect(content().string("ok"));
     }
 
     @Test
-    public void testPerm() throws Exception {
-        this.mvc.perform(get("/jwttest/perm1")
+    public void testSubPerm() throws Exception {
+        this.mvc.perform(get("/auth-test/action-2")
                 .header(headerKeyOfToken, token))
                 .andExpect(status().isOk())
-                .andExpect(content().string("0"));
-        this.mvc.perform(get("/jwttest/perm2")
+                .andExpect(content().string("ok"));
+        this.mvc.perform(get("/auth-test/action-3")
                 .header(headerKeyOfToken, token))
                 .andExpect(status().is(HttpStatus.FORBIDDEN.value()));
-                //.andExpect(content().string("{\"code\":403,\"message\":\"permission denied！\",\"data\":null}"));
+        //.andExpect(content().string("{\"code\":403,\"message\":\"permission denied！\",\"data\":null}"));
+    }
+
+    @Test
+    public void testPathVarPerm() throws Exception {
+        this.mvc.perform(get("/auth-test/pathvar/123")
+                .header(headerKeyOfToken, token))
+                .andExpect(status().is(HttpStatus.FORBIDDEN.value()));
+        this.mvc.perform(get("/auth-test/deep-pathvar/123/action1")
+                .header(headerKeyOfToken, token))
+                .andExpect(status().isOk())
+                .andExpect(content().string("ok"));
+        this.mvc.perform(get("/auth-test/deep-pathvar/123/action2")
+                .header(headerKeyOfToken, token))
+                .andExpect(status().is(HttpStatus.FORBIDDEN.value()));
+        //.andExpect(content().string("{\"code\":403,\"message\":\"permission denied！\",\"data\":null}"));
     }
 
 }
