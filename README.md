@@ -1,26 +1,27 @@
-如需了解本框架的设计细节，请阅读：[基于Shiro和JWT的无状态安全验证方案](https://www.jianshu.com/p/6fc3f3f701da)这篇文章
+如需了解本框架的设计细节，请阅读：[基于 Shiro 和 JWT 的无状态安全验证方案](https://blog.csdn.net/weixin_46628206/article/details/105033980)这篇文章
 
 ## 简介
-用户权限管理是每个信息系统最基本的需求，对基于Java的项目来说，最常用的权限管理框架就是大名鼎鼎的Apache Shiro。Apache Shiro功能非常强大，使用广泛，几乎成为了权限管理的代名词。但对于普通项目来说，Shiro的设计理念因为追求灵活性，一些概念如Realm，Subject的抽象级别都比较高，显得比较复杂。如果没有对框架细节进行深入了解的话，很难理解其中的准确含义。要将其应用于实际项目，还需要针对项目的实际情况做大量的配置和改造，时间成本较高。
 
-而且Shiro兴起的时代主流应用还是传统的基于Session的Web网站，并没有过多的考虑目前流行的微服务等应用形式的权限管理需求。导致其并没有提供一套无状态微服务的开箱即用的整合方案。需要在项目层面对Shiro进行二次封装和改进，开发难度较大。
+用户权限管理是每个信息系统最基本的需求，对基于 Java 的项目来说，最常用的权限管理框架就是大名鼎鼎的 Apache Shiro。Apache Shiro 功能非常强大，使用广泛，几乎成为了权限管理的代名词。但对于普通项目来说，Shiro 的设计理念因为追求灵活性，一些概念如 Realm，Subject 的抽象级别都比较高，显得比较复杂。如果没有对框架细节进行深入了解的话，很难理解其中的准确含义。要将其应用于实际项目，还需要针对项目的实际情况做大量的配置和改造，时间成本较高。
 
-shrio-with-jwt-spring-boot-starter正是针对上述情况而开发的。它基于spring-boot环境，使用Shiro作为基础验证框架，整合了JWT（[JSON Web token](https://jwt.io/)）规范，通过简单的一些配置，提供在微服务环境下开箱即用的无状态权限管理框架。
+而且 Shiro 兴起的时代主流应用还是传统的基于 Session 的 Web 网站，并没有过多的考虑目前流行的微服务等应用形式的权限管理需求。导致其并没有提供一套无状态微服务的开箱即用的整合方案。需要在项目层面对 Shiro 进行二次封装和改进，开发难度较大。
+
+shrio-with-jwt-spring-boot-starter 正是针对上述情况而开发的。它基于 spring-boot 环境，使用 Shiro 作为基础验证框架，整合了 JWT（[JSON Web token](https://jwt.io/)）规范，通过简单的一些配置，提供在微服务环境下开箱即用的无状态权限管理框架。
 
 ## 特点
 
--   完全兼容Shiro
--   无状态设计，无需Session
--   基于JWT规范的Token设计
--   在spring-boot环境下自动配置，开箱即用
--   基于注解的权限配置，并且兼容Shiro的层级权限设置
--   通过接口灵活定义获取用户权限（permission）的方式，兼容多种权限模型
--   Token过期前自动刷新（需配合客户端的实现）
+- 完全兼容 Shiro
+- 无状态设计，无需 Session
+- 基于 JWT 规范的 Token 设计
+- 在 spring-boot 环境下自动配置，开箱即用
+- 基于注解的权限配置，并且兼容 Shiro 的层级权限设置
+- 通过接口灵活定义获取用户权限（permission）的方式，兼容多种权限模型
+- Token 过期前自动刷新（需配合客户端的实现）
 
 ## 使用方法
 
-1. 引入shrio-with-jwt-spring-boot-starter。
-   
+1. 引入 shrio-with-jwt-spring-boot-starter。
+
 ```xml
 <dependency>
     <groupId>com.github.davidfantasy</groupId>
@@ -28,7 +29,8 @@ shrio-with-jwt-spring-boot-starter正是针对上述情况而开发的。它基�
     <version>${version}</version>
 </dependency>
 ```
-2. 根据实际业务的需要，实现**com.github.davidfantasy.jwtshiro.JWTUserAuthService**接口。JWTUserAuthService接口是框架的一个扩展点，便于应用端根据自身的业务规则对权限模型，错误处理等进行自定义实现。**getUserInfo**方法用于客户端访问时根据客户端传回token中包含的用户account信息，获取用户的实际权限。获取的方式由应用程序端来控制，可以从配置文件中加载，也可以根据account查询数据库，获取用户实际权限。**getAuthenticatedUser**方法已提供默认实现，用于获取当前请求接口的客户信息，以下是一个例子
+
+2. 根据实际业务的需要，实现**com.github.davidfantasy.jwtshiro.JWTUserAuthService**接口。JWTUserAuthService 接口是框架的一个扩展点，便于应用端根据自身的业务规则对权限模型，错误处理等进行自定义实现。**getUserInfo**方法用于客户端访问时根据客户端传回 token 中包含的用户 account 信息，获取用户的实际权限。获取的方式由应用程序端来控制，可以从配置文件中加载，也可以根据 account 查询数据库，获取用户实际权限。**getAuthenticatedUser**方法已提供默认实现，用于获取当前请求接口的客户信息，以下是一个例子
 
 ```java
 @Service
@@ -95,9 +97,10 @@ public class JWTUserAuthServiceImpl implements JWTUserAuthService {
 
 }
 ```
-**注意**：getUserInfo这个方法在每次接口调用的时候都会触发，用于检查用户权限，请实现时根据需要对接口的返回结果进行缓存（例如使用Guava的Cache）。
 
-返回值com.github.davidfantasy.jwtshiro.UserInfo类封装了一个系统用户必要的权限信息，可以根据实际需要进行扩展：
+**注意**：getUserInfo 这个方法在每次接口调用的时候都会触发，用于检查用户权限，请实现时根据需要对接口的返回结果进行缓存（例如使用 Guava 的 Cache）。
+
+返回值 com.github.davidfantasy.jwtshiro.UserInfo 类封装了一个系统用户必要的权限信息，可以根据实际需要进行扩展：
 
 ```java
 public class UserInfo {
@@ -120,11 +123,13 @@ public class UserInfo {
 
 }
 ```
-3. 对需要进行权限控制的Controller添加对应的注解，实现灵活的权限控制。**为了简化配置，框架默认所有被拦截的资源必须是要经过认证的用户才可以被访问。**即如果配置的拦截范围是/api/*,则会添加一条默认的验证规则: /api/*=authc。但任何通过注解添加的验证规则都拥有比默认规则更高的优先级。如果需要精确控制某个接口的用户权限，就需要利用到RequiresPerms和AlowAnonymous注解。添加了AlowAnonymous注解的url允许匿名访问，而RequiresPerms则用于指定某个url所需的用户权限，访问用户必须拥有该权限才允许访问该接口。
-   
-**注意**：RequiresPerms比AlowAnonymous拥有更高的优先级，如果一个url同时被设定了两种规则，则AlowAnonymous不会起作用。
+
+3. 对需要进行权限控制的 Controller 添加对应的注解，实现灵活的权限控制。**为了简化配置，框架默认所有被拦截的资源必须是要经过认证的用户才可以被访问。**即如果配置的拦截范围是/api/_,则会添加一条默认的验证规则: /api/_=authc。但任何通过注解添加的验证规则都拥有比默认规则更高的优先级。如果需要精确控制某个接口的用户权限，就需要利用到 RequiresPerms 和 AlowAnonymous 注解。添加了 AlowAnonymous 注解的 url 允许匿名访问，而 RequiresPerms 则用于指定某个 url 所需的用户权限，访问用户必须拥有该权限才允许访问该接口。
+
+**注意**：RequiresPerms 比 AlowAnonymous 拥有更高的优先级，如果一个 url 同时被设定了两种规则，则 AlowAnonymous 不会起作用。
 
 下面是一个访问控制规则设置的例子：
+
 ```java
 @RestController
 @RequestMapping("/api/user")
@@ -155,17 +160,19 @@ public class UserController {
     }
 }
 ```
-在上面的例子中,接口与用户权限的对应关系如下：
-| 接口               | 所需权限                        |
-| :----------------- | :------------------------------ |
-| /api/user/login   | 无需权限，可匿名访问            |
-| /api/user/detail  | 访问用户需具备权限"user"          |
-| /api/user/modify | 访问用户需具备权限"user:modify"  |
-| /api/user/delete | 访问用户需具备权限"user:delete"  |
 
-类似于Shiro官方的如下配置
+在上面的例子中,接口与用户权限的对应关系如下：
+| 接口 | 所需权限 |
+| :----------------- | :------------------------------ |
+| /api/user/login | 无需权限，可匿名访问 |
+| /api/user/detail | 访问用户需具备权限"user" |
+| /api/user/modify | 访问用户需具备权限"user:modify" |
+| /api/user/delete | 访问用户需具备权限"user:delete" |
+
+类似于 Shiro 官方的如下配置
+
 ```xml
-<property name="filterChainDefinitions"> 
+<property name="filterChainDefinitions">
     <value>
         /api/user/login     = anon
         /api/user/detail    = perms["user"]
@@ -174,11 +181,12 @@ public class UserController {
     </value>
 </property>
 ```
-**注意**：和在Shiro中一样，权限是按层级划分的（使用:分割），即在上例中，如果用户拥有的权限中有“user”，则可以同时访问/api/user/detail,/api/user/modify,/api/user/delete三个接口
+
+**注意**：和在 Shiro 中一样，权限是按层级划分的（使用:分割），即在上例中，如果用户拥有的权限中有“user”，则可以同时访问/api/user/detail,/api/user/modify,/api/user/delete 三个接口
 
 ## 客户端调用
 
-客户端在访问非匿名接口前，都需要调用服务端的登录接口获取accessToken，accessToken有时效限制，在生命周期内由客户端负责对accessToken进行存储和管理。服务端的登录接口生成accessToken的示例代码如下：
+客户端在访问非匿名接口前，都需要调用服务端的登录接口获取 accessToken，accessToken 有时效限制，在生命周期内由客户端负责对 accessToken 进行存储和管理。服务端的登录接口生成 accessToken 的示例代码如下：
 
 ```java
 
@@ -208,7 +216,8 @@ public class MockController {
 
 }
 ```
-客户端登录后获取的accessToken,每次调用接口时，都将accessToken加入到请求的header中供服务端进行权限验证。header中的名称默认为"jwt-token"，也可以通过配置修改为其它名称，请求示例如下：
+
+客户端登录后获取的 accessToken,每次调用接口时，都将 accessToken 加入到请求的 header 中供服务端进行权限验证。header 中的名称默认为"jwt-token"，也可以通过配置修改为其它名称，请求示例如下：
 
 ```http
 accept: application/json, text/plain, */*
@@ -216,21 +225,20 @@ accept-encoding: gzip, deflate, br
 accept-language: zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6
 jwt-token: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE1ODQzNjG5OTtsImFjY291bnQiOiIxODcxNjYxODEzOCJ9.7eJYVmSys6YBu51Al5hdXdPMdrKsQFCqMwHu8ATaOPY
 ```
-## 客户端accessToken自动刷新
 
-accessToken的有效期由两个配置构成，maxAliveMinute和maxIdleMinute。maxAliveMinute定义了accessToken的理论过期时间，而maxIdleMinute定义了
-accessToken的最大生存周期。框架会自动注册一个Spring的HandlerInterceptor用来处理Token的自动刷新问题，如果传入的Token已经超过maxAliveMinute设定的时间，但还没有达到maxIdleMinute的限制，则会自动刷新该用户的accessToken并添加在response header（header中的名称取决于配置值），客户端如果在响应头中发现有新的token返回,说明当前token即将失效，需要及时更新自身存储的token。
+## 客户端 accessToken 自动刷新
 
-这个机制实际是提供一个窗口期，让客户端安全的刷新accessToken。试想如果token失效了就必须立即重新登录，那势必会严重影响到用户的实际体验。
+accessToken 的有效期由两个配置构成，maxAliveMinute 和 maxIdleMinute。maxAliveMinute 定义了 accessToken 的理论过期时间，而 maxIdleMinute 定义了
+accessToken 的最大生存周期。框架会自动注册一个 Spring 的 HandlerInterceptor 用来处理 Token 的自动刷新问题，如果传入的 Token 已经超过 maxAliveMinute 设定的时间，但还没有达到 maxIdleMinute 的限制，则会自动刷新该用户的 accessToken 并添加在 response header（header 中的名称取决于配置值），客户端如果在响应头中发现有新的 token 返回,说明当前 token 即将失效，需要及时更新自身存储的 token。
+
+这个机制实际是提供一个窗口期，让客户端安全的刷新 accessToken。试想如果 token 失效了就必须立即重新登录，那势必会严重影响到用户的实际体验。
 
 ## 配置项说明
 
-| 参数名                     | 默认值    | 说明                                                                                          |
-| :------------------------- | :-------- | :-------------------------------------------------------------------------------------------- |
-| jwt-shiro.urlPattern       | /*        | 需要进行权限拦截的URL pattern, 多个使用url隔开，例如：/api/*,/rest/*                          |
-| jwt-shiro.maxAliveMinute   | 30        | accessToken的理论过期时间，单位分钟，token如果超过该时间则接口响应的header中附带新的token信息 |
-| jwt-shiro.maxIdleMinute    | 60        | accessToken的最大生存周期，单位分钟，在此时间内的token无需重新登录即可刷新                    |
-| jwt-shiro.headerKeyOfToken | jwt-token | accessToken在http header中的name                                                              |
-| jwt-shiro.accountAlias     | account   | token中保存的用户名的key name                                                                 |
-
- 
+| 参数名                     | 默认值    | 说明                                                                                                |
+| :------------------------- | :-------- | :-------------------------------------------------------------------------------------------------- |
+| jwt-shiro.urlPattern       | /\*       | 需要进行权限拦截的 URL pattern, 多个使用 url 隔开，例如：/api/_,/rest/_                             |
+| jwt-shiro.maxAliveMinute   | 30        | accessToken 的理论过期时间，单位分钟，token 如果超过该时间则接口响应的 header 中附带新的 token 信息 |
+| jwt-shiro.maxIdleMinute    | 60        | accessToken 的最大生存周期，单位分钟，在此时间内的 token 无需重新登录即可刷新                       |
+| jwt-shiro.headerKeyOfToken | jwt-token | accessToken 在 http header 中的 name                                                                |
+| jwt-shiro.accountAlias     | account   | token 中保存的用户名的 key name                                                                     |
