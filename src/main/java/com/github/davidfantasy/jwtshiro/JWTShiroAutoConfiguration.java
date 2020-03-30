@@ -1,7 +1,8 @@
 package com.github.davidfantasy.jwtshiro;
 
+import com.github.davidfantasy.jwtshiro.shiro.JWTAnyPermsFilter;
 import com.github.davidfantasy.jwtshiro.shiro.JWTAuthFilter;
-import com.github.davidfantasy.jwtshiro.shiro.JWTPermFilter;
+import com.github.davidfantasy.jwtshiro.shiro.JWTPermsFilter;
 import com.github.davidfantasy.jwtshiro.shiro.JWTShiroRealm;
 import com.google.common.collect.Maps;
 import org.apache.shiro.mgt.DefaultSessionStorageEvaluator;
@@ -72,7 +73,8 @@ public class JWTShiroAutoConfiguration {
         ShiroFilterFactoryBean factoryBean = new ShiroFilterFactoryBean();
         Map<String, Filter> filters = Maps.newHashMap();
         filters.put("jwtAuthc", new JWTAuthFilter(prop.getHeaderKeyOfToken(), userAuthService));
-        filters.put("jwtPerm", new JWTPermFilter(userAuthService));
+        filters.put("jwtPerms", new JWTPermsFilter(userAuthService));
+        filters.put("jwtAnyPerms", new JWTAnyPermsFilter(userAuthService));
         factoryBean.setFilters(filters);
         factoryBean.setSecurityManager(securityManager);
         //此处暂时不去设置映射关系，等到ServletContext环境启动后再去刷新

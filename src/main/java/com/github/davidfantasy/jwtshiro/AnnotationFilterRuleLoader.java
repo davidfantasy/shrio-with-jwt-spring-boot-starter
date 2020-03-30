@@ -2,8 +2,9 @@ package com.github.davidfantasy.jwtshiro;
 
 import com.github.davidfantasy.jwtshiro.annotation.AlowAnonymous;
 import com.github.davidfantasy.jwtshiro.annotation.RequiresPerms;
-import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import org.apache.shiro.authz.annotation.Logical;
 import org.apache.shiro.web.filter.mgt.DefaultFilterChainManager;
 import org.apache.shiro.web.filter.mgt.PathMatchingFilterChainResolver;
 import org.apache.shiro.web.servlet.AbstractShiroFilter;
@@ -14,6 +15,9 @@ import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -28,9 +32,7 @@ public class AnnotationFilterRuleLoader {
     private AbstractShiroFilter shiroFilter;
 
     private RequestMappingHandlerMapping handlerMapping;
-
-    public static final String BASE_AUTH_PERM_NAME = "base-auth";
-
+    
     private static final Pattern pathVarUrlPattern = Pattern.compile("\\{\\w+\\}");
 
     protected AnnotationFilterRuleLoader(AbstractShiroFilter shiroFilter, RequestMappingHandlerMapping handlerMapping) {
@@ -46,10 +48,11 @@ public class AnnotationFilterRuleLoader {
             Class<?> urlBeanClass = entry.getValue().getBeanType();
             String url = entry.getKey().getPatternsCondition().getPatterns().toString();
             url = url.substring(1, url.length() - 1);
-            String beanPerm = parsePermFromClass(urlBeanClass);
-            String methodPerm = parsePermFromMethod(urlMethod);
-            String perm = this.concatPerms(beanPerm, methodPerm);
-            if (perm == null) {
+            Logical logical = parseLogical(urlBeanClass, urlMethod);
+            List<String> beanPerm = parsePermFromClass(urlBeanClass);
+            List<String> methodPerm = parsePermFromMethod(urlMethod);
+            List<String> perms = this.concatPerms(beanPerm, methodPerm);
+            if (perms == null || perms.isEmpty()) {
                 continue;
             }
             //替换url中的参数，否则此类型的url不会正确的授权
@@ -57,15 +60,15 @@ public class AnnotationFilterRuleLoader {
             if (pathVarUrlMatcher.find()) {
                 url = pathVarUrlMatcher.replaceAll("**");
             }
-            //将映射关系保存后可用于其它需要使用的模块
-            PermUtil.addUrlMapping(url, perm);
             if (urlRules.containsKey(url)) {
                 logger.warn("{}链接权限重复定义，仅最新的权限设置有效:{}", url, urlRules.get(url));
             }
-            if ("anon".equals(perm)) {
+            if (perms.contains("anon")) {
                 urlRules.put(url, "anon");
-            } else {
-                urlRules.put(url, "jwtAuthc,jwtPerm[" + perm + "]");
+            } else if (logical == Logical.AND) {
+                urlRules.put(url, "jwtAuthc,jwtPerms" + perms.toString());
+            } else if (logical == Logical.OR) {
+                urlRules.put(url, "jwtAuthc,jwtAnyPerms" + perms.toString());
             }
         }
         updateShiroPermissionDefines(urlRules);
@@ -91,53 +94,57 @@ public class AnnotationFilterRuleLoader {
         manager.createChain("/**", "jwtAuthc");
     }
 
-    private String parsePermFromClass(Class<?> beanClass) {
+    private List<String> parsePermFromClass(Class<?> beanClass) {
         RequiresPerms rp = beanClass.getAnnotation(RequiresPerms.class);
         AlowAnonymous anon = beanClass.getAnnotation(AlowAnonymous.class);
         if (rp != null && anon != null) {
             throw new IllegalStateException("不能同时标注RequiresPerms和AlowAnonymous");
         } else if (rp != null) {
-            return rp.value().trim();
+            return Arrays.asList(rp.value());
         } else if (anon != null) {
-            return "";
+            return new ArrayList<>();
         } else {
             return null;
         }
     }
 
-    private String parsePermFromMethod(Method urlMethod) {
+    private List<String> parsePermFromMethod(Method urlMethod) {
         RequiresPerms rp = urlMethod.getAnnotation(RequiresPerms.class);
         AlowAnonymous anon = urlMethod.getAnnotation(AlowAnonymous.class);
         if (rp != null && anon != null) {
             throw new IllegalStateException("不能同时标注RequiresPerms和AlowAnonymous");
         } else if (rp != null) {
-            return rp.value().trim();
+            return Arrays.asList(rp.value());
         } else if (anon != null) {
-            return "";
+            return new ArrayList<>();
         } else {
             return null;
         }
     }
 
-    private String concatPerms(String parentPerm, String childPerm) {
+    private List<String> concatPerms(List<String> parentPerm, List<String> childPerm) {
         if (parentPerm == null && childPerm == null) {
             return null;
-        } else if ("".equals(parentPerm) && childPerm == null) {
-            return "anon";
-        } else if ("".equals(childPerm)) {
-            return "anon";
+        } else if (parentPerm != null && parentPerm.isEmpty() && childPerm == null) {
+            return Lists.newArrayList("anon");
+        } else if (childPerm != null && childPerm.isEmpty()) {
+            return Lists.newArrayList("anon");
+        } else if (childPerm != null) {
+            return childPerm;
         } else {
-            String perm = "";
-            if (Strings.isNullOrEmpty(parentPerm)) {
-                perm = childPerm;
-            } else if (Strings.isNullOrEmpty(childPerm)) {
-                //默认如果只定义了bean级别的perm, 则自动添加一个权限后缀名，用于定义此链接之下的所有默认权限名，避免直接使用根权限名
-                perm = parentPerm + ":" + BASE_AUTH_PERM_NAME;
-            } else {
-                perm = parentPerm.concat(":").concat(childPerm);
-            }
-            return perm;
+            return parentPerm;
         }
+    }
+
+    private Logical parseLogical(Class<?> urlBeanClass, Method urlMethod) {
+        RequiresPerms rp = urlMethod.getAnnotation(RequiresPerms.class);
+        if (rp == null) {
+            rp = urlBeanClass.getAnnotation(RequiresPerms.class);
+        }
+        if (rp == null) {
+            return Logical.AND;
+        }
+        return rp.logical();
     }
 
 }

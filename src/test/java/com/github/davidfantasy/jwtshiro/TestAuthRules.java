@@ -94,4 +94,15 @@ public class TestAuthRules {
         //.andExpect(content().string("{\"code\":403,\"message\":\"permission denied！\",\"data\":null}"));
     }
 
+    @Test
+    public void testMultiPerms() throws Exception {
+        this.mvc.perform(get("/auth-test/multi-perms/and")
+                .header(headerKeyOfToken, token))
+                .andExpect(status().is(HttpStatus.FORBIDDEN.value()));
+        this.mvc.perform(get("/auth-test/multi-perms/or")
+                .header(headerKeyOfToken, token))
+                .andExpect(status().isOk())
+                .andExpect(content().string("ok"));
+    }
+
 }

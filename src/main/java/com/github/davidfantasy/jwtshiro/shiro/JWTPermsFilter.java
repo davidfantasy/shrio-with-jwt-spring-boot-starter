@@ -10,11 +10,14 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 
-public class JWTPermFilter extends PermissionsAuthorizationFilter {
+/**
+ * shiro自定义过滤器，拥有所有指定权限的用户才能访问受保护资源的filter
+ */
+public class JWTPermsFilter extends PermissionsAuthorizationFilter {
 
     private JWTUserAuthService userAuthService;
 
-    public JWTPermFilter(JWTUserAuthService userAuthService) {
+    public JWTPermsFilter(JWTUserAuthService userAuthService) {
         this.userAuthService = userAuthService;
     }
 

@@ -124,40 +124,48 @@ public class UserInfo {
 }
 ```
 
-3. 对需要进行权限控制的 Controller 添加对应的注解，实现灵活的权限控制。**为了简化配置，框架默认所有被拦截的资源必须是要经过认证的用户才可以被访问。**即如果配置的拦截范围是/api/_,则会添加一条默认的验证规则: /api/_=authc。但任何通过注解添加的验证规则都拥有比默认规则更高的优先级。如果需要精确控制某个接口的用户权限，就需要利用到 RequiresPerms 和 AlowAnonymous 注解。添加了 AlowAnonymous 注解的 url 允许匿名访问，而 RequiresPerms 则用于指定某个 url 所需的用户权限，访问用户必须拥有该权限才允许访问该接口。
+3. 对需要进行权限控制的 Controller 添加对应的注解，实现灵活的权限控制。**为了简化配置，框架默认所有被拦截的资源必须是要经过认证的用户才可以被访问。**即如果配置的拦截范围是/api/_,则会添加一条默认的验证规则: /api/_=authc。但任何通过注解添加的验证规则都拥有比默认规则更高的优先级。如果需要精确控制某个接口的用户权限，就需要利用到 RequiresPerms 和 AlowAnonymous 注解。添加了 AlowAnonymous 注解的 url 允许匿名访问，而 RequiresPerms 则用于指定某个 url 所需的用户权限，访问用户必须拥有该权限才允许访问该接口（用法和Shiro原生的@RequiresPermissions
+基本一致，不过是基于url进行拦截，不需要配置动态代理）。
 
-**注意**：RequiresPerms 比 AlowAnonymous 拥有更高的优先级，如果一个 url 同时被设定了两种规则，则 AlowAnonymous 不会起作用。
+**注意**：RequiresPerms 比 AlowAnonymous 拥有更高的优先级，如果一个 url 同时被设定了两种规则，则 AlowAnonymous 不会起作用。如果method和class同时添加了RequiresPerms注解，则method的注解拥有更高优先级。
 
 下面是一个访问控制规则设置的例子：
 
 ```java
 @RestController
 @RequestMapping("/api/user")
-@RequiresPerms("user")
+@RequiresPerms("user:basic")
 public class UserController {
 
     @AlowAnonymous
     @PostMapping("/login")
     public String login() {
-       return null;
+       return "ok";
     }
 
     @GetMapping("/detail")
     public String getUserDetail() {
-        return null;
+       return "ok";
     }
 
     @PostMapping("/modify")
-    @RequiresPerms("modify")
+    @RequiresPerms("user:modify")
     public String modifyUser() {
-        return null;
+        return "ok";
     }
 
     @PostMapping("/delete")
-    @RequiresPerms("delete")
-    public String testPerm2() {
-        return null;
+    @RequiresPerms({"system","user:delete"})
+    public String deleteUser() {
+        return "ok";
     }
+
+    @PostMapping("/modify-logs")
+    @RequiresPerms(value={"system","user:logs"}, logical = Logical.OR)
+    public String deleteUser() {
+        return "ok";
+    }
+
 }
 ```
 
@@ -165,9 +173,10 @@ public class UserController {
 | 接口 | 所需权限 |
 | :----------------- | :------------------------------ |
 | /api/user/login | 无需权限，可匿名访问 |
-| /api/user/detail | 访问用户需具备权限"user" |
+| /api/user/detail | 访问用户需具备权限"user:basic" |
 | /api/user/modify | 访问用户需具备权限"user:modify" |
-| /api/user/delete | 访问用户需具备权限"user:delete" |
+| /api/user/delete | 访问用户需同时具备权限"system","user:delete" |
+| /api/user/modify-logs | 访问用户需具备权限"system"或者"user:logs" |
 
 类似于 Shiro 官方的如下配置
 

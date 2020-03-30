@@ -2,6 +2,7 @@ package com.github.davidfantasy.jwtshiro;
 
 
 import com.github.davidfantasy.jwtshiro.annotation.AlowAnonymous;
+import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;

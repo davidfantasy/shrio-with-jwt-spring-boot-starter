@@ -15,8 +15,7 @@ public class MockJWTUserAuthService implements JWTUserAuthService {
         UserInfo user = new UserInfo();
         user.setAccount("aUser");
         user.setSecret("123456");
-        user.setPermissions(Sets.newHashSet("" +
-                "parent-perm:" + AnnotationFilterRuleLoader.BASE_AUTH_PERM_NAME,
+        user.setPermissions(Sets.newHashSet("parent-perm:basic",
                 "parent-perm:subperm-1",
                 "parent-perm:pathvar-perm-2"));
         return user;
