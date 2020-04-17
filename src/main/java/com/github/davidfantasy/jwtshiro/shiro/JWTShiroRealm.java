@@ -1,8 +1,8 @@
 package com.github.davidfantasy.jwtshiro.shiro;
 
 import com.auth0.jwt.interfaces.DecodedJWT;
-import com.github.davidfantasy.jwtshiro.JWTUserAuthService;
 import com.github.davidfantasy.jwtshiro.JWTHelper;
+import com.github.davidfantasy.jwtshiro.JWTUserAuthService;
 import com.github.davidfantasy.jwtshiro.UserInfo;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationInfo;
@@ -58,7 +58,7 @@ public class JWTShiroRealm extends AuthorizingRealm {
         if (user == null) {
             throw new AuthenticationException("未找到用户信息");
         }
-        DecodedJWT jwt = jwtHelper.verify(token, username, user.getSecret());
+        DecodedJWT jwt = jwtHelper.verify(token, user.getSecret());
         if (jwt == null) {
             throw new AuthenticationException("token已经过期，请重新登录");
         }

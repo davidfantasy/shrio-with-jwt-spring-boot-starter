@@ -31,9 +31,7 @@ import javax.annotation.PostConstruct;
 import javax.servlet.Filter;
 import java.util.Map;
 
-/**
- * TODO:对于存在PathVariable的链接支持还存在问题，例如：/test/{var}
- */
+
 @Configuration
 @ConditionalOnBean(JWTUserAuthService.class)
 @EnableConfigurationProperties({JWTShiroProperties.class})

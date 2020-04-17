@@ -25,7 +25,7 @@ public class JWTHelper {
     /**
      * 校验token是否正确
      */
-    public DecodedJWT verify(String token, String account, String secret) {
+    public DecodedJWT verify(String token, String secret) {
         try {
             Algorithm algorithm = Algorithm.HMAC256(secret);
             JWTVerifier verifier = JWT.require(algorithm)
@@ -68,7 +68,6 @@ public class JWTHelper {
      */
     public String sign(String account, String secret, long expireAfterMinutes) {
         Date expireAfter = new Date(System.currentTimeMillis() + expireAfterMinutes * 60 * 1000);
-        System.out.println(System.currentTimeMillis() + ":" + expireAfter.getTime());
         Algorithm algorithm = Algorithm.HMAC256(secret);
         // 附带username信息
         return JWT.create()
